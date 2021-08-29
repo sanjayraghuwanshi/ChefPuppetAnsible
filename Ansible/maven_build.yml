@@ -1,0 +1,31 @@
+- name: Performing git pull and maven build
+  hosts: local
+  tasks:
+    - name: clean old repository if exists.
+      file: name=/home/jenkins/maven state=absent
+
+    - name: check out the repository
+      command: git clone https://github.com/sanjayraghuwanshi/simple-java-maven-app.git /home/jenkins/maven
+
+    - name: run maven build
+      command: mvn -f /home/jenkins/maven/pom.xml clean package
+
+- name: Performing deployment and apache restart
+  hosts: remote
+  become: yes
+  become_method: sudo
+
+  tasks:
+    - name: apache2 stop
+      service: name=apache2 state=stopped
+
+    - name: create a directory for deployment
+      file: name=/var/www/html/deployment state=directory
+
+    - name: Copy build to remote
+      copy:
+         src: /home/jenkins/maven/target/my-app-1.0-SNAPSHOT.jar
+         dest: /var/www/html/deployment
+
+    - name: apache2 start
+      service: name=apache2 state=started

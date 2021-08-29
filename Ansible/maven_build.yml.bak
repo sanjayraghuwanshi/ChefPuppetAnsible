@@ -1,0 +1,17 @@
+- name: Git pull and run maven build
+  hosts: remote
+  become: no
+  become_method: sudo
+
+  tasks:
+    - name: apache2 stop
+      service: name=apache2 state=stopped
+
+    - name: clean old repository
+      file: name=/home/jenkins/maven state=absent
+
+    - name: check out the repository on the host
+      command: git clone https://github.com/sanjayraghuwanshi/simple-java-maven-app.git /home/jenkins/maven
+
+    - name: run maven build
+      command: mvn -f /home/jenkins/maven/pom.xml clean package
