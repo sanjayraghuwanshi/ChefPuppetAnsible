@@ -1,0 +1,43 @@
+---
+  - name: MySql Config
+    hosts: local
+    become: yes
+    tasks:
+
+  - name: install mysql
+    apt: name=mysql-server state=present
+
+  - name: install package
+    pip: name=pymysql state=present
+
+  - name: start service
+    service: name=mysql state=started enabled=yes
+
+  - block:
+      - name: chage root password first time
+        mysql_user:
+        name: root
+        password: 'abc.123'
+        login_unix_socket: '/var/run/mysqld/mysqld.sock'
+        rescue:
+
+  - name: change root password
+    mysql_user:
+      name: root
+      password: 'abc.123'
+      login_user: root
+      login_password: 'abc.123'
+  
+  - name: Remove anonym user
+    mysql_user:
+      name: ''
+      host_all: yes
+      state: absent
+      login_user: root
+      login_password: 'abc.123'   
+
+  - name: create a new database
+    mysql_db:
+      name: Simplilearn
+      state: present
+      login_user: root
